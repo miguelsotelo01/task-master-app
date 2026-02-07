@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AppLayout from "./components/layout/AppLayout";
+import HomePage from "./pages/HomePage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <h1 className="text-3xl font-bold text-blue-600">Task Master PWA 🚀</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        {/* El Layout envuelve a todas las rutas internas */}
+        <Route path="/" element={<AppLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          {/* Aquí agregaremos más rutas luego (Calendar, Stats, etc) */}
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
