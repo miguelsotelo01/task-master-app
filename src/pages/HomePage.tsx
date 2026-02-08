@@ -1,64 +1,84 @@
 import { useState } from "react";
 import { useTaskStore } from "../store/useTaskStore";
+import { useUIStore } from "../store/useUIStore"; // Importar UI Store
 import TaskItem from "../components/TaskItem";
+import { Send } from "lucide-react"; // Icono para enviar
 
 export default function HomePage() {
   const [newTask, setNewTask] = useState("");
   const { tasks, addTask } = useTaskStore();
+  const { isWriting, closeInput } = useUIStore(); // Usamos el estado global
 
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTask.trim()) return;
+
     addTask(newTask);
-    setNewTask(""); // Limpiar input
+    setNewTask("");
+    closeInput(); // Cerramos el input al enviar
   };
 
   return (
-    <div className="px-4 py-6 max-w-md mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-          Mis Tareas
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Tienes {tasks.filter((t) => !t.completed).length} pendientes hoy.
-        </p>
-      </div>
-
-      {/* Lista de Tareas */}
-      <div className="space-y-3 mb-24">
+    <div className="relative">
+      {/* Header y Lista (Igual que antes) */}
+      <div className="px-4 py-6 pb-32">
         {" "}
-        {/* Margin bottom para no chocar con el input fijo */}
-        {tasks.length === 0 ? (
-          <div className="text-center py-10 opacity-50">
-            <p>¡Todo limpio! 🎉</p>
-            <p className="text-sm">Agrega una tarea para empezar.</p>
-          </div>
-        ) : (
-          tasks.map((task) => <TaskItem key={task.id} task={task} />)
-        )}
+        {/* Mucho padding abajo para ver la última tarea */}
+        <header className="mb-6">
+          <h1 className="text-3xl font-extrabold text-gray-900">Mis Tareas</h1>
+          <p className="text-gray-500">
+            {tasks.filter((t) => !t.completed).length} pendientes
+          </p>
+        </header>
+        <div className="space-y-3">
+          {tasks.length === 0 ? (
+            <div className="text-center py-10 opacity-50">
+              <p>¡Todo limpio! 🎉</p>
+            </div>
+          ) : (
+            tasks.map((task) => <TaskItem key={task.id} task={task} />)
+          )}
+        </div>
       </div>
 
-      {/* Input Flotante (Simulando App de Chat/Tareas) */}
-      <form
-        onSubmit={handleAddTask}
-        className="fixed bottom-20 left-4 right-4 bg-white p-2 rounded-full shadow-xl border border-gray-100 flex items-center gap-2"
-      >
-        <input
-          type="text"
-          placeholder="Escribe una nueva tarea..."
-          className="flex-1 px-4 py-3 bg-transparent outline-none text-gray-700 placeholder:text-gray-400"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
+      {/* --- AQUÍ ESTÁ LA MAGIA --- */}
+
+      {/* 1. Fondo Oscuro (Overlay) - Solo visible si isWriting es true */}
+      {isWriting && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm transition-opacity"
+          onClick={closeInput} // Si tocas fuera, se cierra
         />
-        <button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!newTask.trim()}
+      )}
+
+      {/* 2. El Input que se desliza desde abajo */}
+      <div
+        className={`
+          fixed bottom-24 left-4 right-4 z-50 transition-all duration-300 transform
+          ${isWriting ? "translate-y-0 opacity-100 scale-100" : "translate-y-20 opacity-0 scale-95 pointer-events-none"}
+      `}
+      >
+        <form
+          onSubmit={handleAddTask}
+          className="bg-white p-2 rounded-2xl shadow-2xl border border-gray-100 flex items-center gap-2"
         >
-          <span className="font-bold text-xl leading-none">+</span>
-        </button>
-      </form>
+          <input
+            autoFocus // Para que el teclado salga solo en el móvil
+            type="text"
+            placeholder="¿Qué tienes que hacer?"
+            className="flex-1 px-4 py-3 bg-transparent outline-none text-gray-700 text-lg placeholder:text-gray-400"
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+          />
+          <button
+            type="submit"
+            disabled={!newTask.trim()}
+            className="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:scale-95 transition-all"
+          >
+            <Send size={20} />
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

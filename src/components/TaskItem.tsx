@@ -39,6 +39,7 @@ export default function TaskItem({ task }: TaskItemProps) {
 
       {/* 3. Botón de Borrar (Solo visible al pasar el mouse en PC, o siempre en móvil si quitamos 'group-hover') */}
       <button
+        title="borrar"
         onClick={() => deleteTask(task.id)}
         className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-colors"
       >
