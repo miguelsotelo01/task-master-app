@@ -1,68 +1,126 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware"; // 👈 Importamos esto
+import { supabase } from "../lib/supabase";
 
 export interface Task {
   id: string;
   title: string;
-  completed: boolean;
-  createdAt: number;
+  is_completed: boolean; // Ojo: Supabase usa snake_case por defecto en SQL
+  created_at: string;
 }
 
 interface TaskState {
   tasks: Task[];
-  addTask: (title: string) => void;
-  toggleTask: (id: string) => void;
-  deleteTask: (id: string) => void;
+  loading: boolean;
+  fetchTasks: () => Promise<void>;
+  addTask: (title: string) => Promise<void>;
+  toggleTask: (id: string, currentStatus: boolean) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
 }
 
-export const useTaskStore = create<TaskState>()(
-  persist(
-    // 👈 Envolvemos todo en persist(...)
-    (set) => ({
-      tasks: [
-        // Puedes dejar esto vacío [] si prefieres empezar de cero
-        {
-          id: "1",
-          title: "Configurar PWA 📱",
-          completed: true,
-          createdAt: Date.now(),
-        },
-        {
-          id: "2",
-          title: "Aprender Zustand 🐻",
-          completed: false,
-          createdAt: Date.now(),
-        },
-      ],
+export const useTaskStore = create<TaskState>((set, get) => ({
+  tasks: [],
+  loading: false,
 
-      addTask: (title) =>
-        set((state) => ({
-          tasks: [
-            {
-              id: crypto.randomUUID(),
-              title,
-              completed: false,
-              createdAt: Date.now(),
-            },
-            ...state.tasks,
-          ],
-        })),
+  // 1. OBTENER TAREAS (READ)
+  fetchTasks: async () => {
+    set({ loading: true });
 
-      toggleTask: (id) =>
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === id ? { ...task, completed: !task.completed } : task,
-          ),
-        })),
+    // Obtenemos el usuario actual
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return set({ tasks: [], loading: false });
 
-      deleteTask: (id) =>
-        set((state) => ({
-          tasks: state.tasks.filter((task) => task.id !== id),
-        })),
-    }),
-    {
-      name: "task-storage", // 👈 Nombre de la key en localStorage
-      storage: createJSONStorage(() => localStorage), // 👈 Dónde guardar
-    },
-  ),
-);
+    // Pedimos las tareas a Supabase
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error cargando tareas:", error);
+    } else {
+      set({ tasks: data as Task[] });
+    }
+    set({ loading: false });
+  },
+
+  // 2. CREAR TAREA (CREATE)
+  addTask: async (title) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Optimismo: Agregamos a la lista localmente primero para que se sienta rápido
+    const tempId = crypto.randomUUID();
+    const newTask = {
+      id: tempId,
+      title,
+      is_completed: false,
+      created_at: new Date().toISOString(),
+      user_id: user.id, // Importante: Asignamos la tarea al usuario
+    };
+
+    set((state) => ({ tasks: [newTask as any, ...state.tasks] }));
+
+    // Enviamos a la nube
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert({ title, user_id: user.id }) // Supabase genera el ID real y fecha
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creando tarea:", error);
+      // Si falla, borramos la tarea temporal (Rollback)
+      set((state) => ({ tasks: state.tasks.filter((t) => t.id !== tempId) }));
+    } else if (data) {
+      // Reemplazamos la tarea temporal con la real (que tiene el ID verdadero)
+      set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === tempId ? (data as Task) : t)),
+      }));
+    }
+  },
+
+  // 3. ACTUALIZAR (UPDATE)
+  toggleTask: async (id, currentStatus) => {
+    // Optimismo UI
+    set((state) => ({
+      tasks: state.tasks.map((t) =>
+        t.id === id ? { ...t, is_completed: !currentStatus } : t,
+      ),
+    }));
+
+    const { error } = await supabase
+      .from("tasks")
+      .update({ is_completed: !currentStatus })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error actualizando:", error);
+      // Rollback si falla
+      set((state) => ({
+        tasks: state.tasks.map((t) =>
+          t.id === id ? { ...t, is_completed: currentStatus } : t,
+        ),
+      }));
+    }
+  },
+
+  // 4. BORRAR (DELETE)
+  deleteTask: async (id) => {
+    const previousTasks = get().tasks; // Guardamos copia por si acaso
+
+    set((state) => ({
+      tasks: state.tasks.filter((t) => t.id !== id),
+    }));
+
+    const { error } = await supabase.from("tasks").delete().eq("id", id);
+
+    if (error) {
+      console.error("Error borrando:", error);
+      set({ tasks: previousTasks }); // Rollback
+    }
+  },
+}));

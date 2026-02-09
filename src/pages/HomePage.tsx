@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTaskStore } from "../store/useTaskStore";
 import { useUIStore } from "../store/useUIStore"; // Importar UI Store
 import TaskItem from "../components/TaskItem";
 import { Send } from "lucide-react"; // Icono para enviar
 
 export default function HomePage() {
+  const { tasks, addTask, fetchTasks } = useTaskStore(); // Agrega fetchTasks aquí
   const [newTask, setNewTask] = useState("");
-  const { tasks, addTask } = useTaskStore();
+  //const { tasks, addTask } = useTaskStore();
   const { isWriting, closeInput } = useUIStore(); // Usamos el estado global
-
+  useEffect(() => {
+    fetchTasks();
+  }, []);
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTask.trim()) return;
@@ -24,10 +27,10 @@ export default function HomePage() {
       <div className="px-4 py-6 pb-32">
         {" "}
         {/* Mucho padding abajo para ver la última tarea */}
-        <header className="mb-6">
+        <header className="mb-6 text-center">
           <h1 className="text-3xl font-extrabold text-gray-900">Mis Tareas</h1>
           <p className="text-gray-500">
-            {tasks.filter((t) => !t.completed).length} pendientes
+            {tasks.filter((t) => !t.is_completed).length} pendientes
           </p>
         </header>
         <div className="space-y-3">

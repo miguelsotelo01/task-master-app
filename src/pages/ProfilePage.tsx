@@ -1,18 +1,24 @@
 import { User, Settings, Moon, LogOut, ShieldCheck, Award } from "lucide-react";
 import { useTaskStore } from "../store/useTaskStore";
+import { supabase } from "../lib/supabase"; // 👈 1. Importamos Supabase
 
 export default function ProfilePage() {
   const { tasks } = useTaskStore();
 
-  // Calculamos estadísticas reales basadas en tu store
-  const completedTasks = tasks.filter((t) => t.completed).length;
+  const completedTasks = tasks.filter((t) => t.is_completed).length;
   const totalTasks = tasks.length;
   const progress =
     totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
+  // 👈 2. Función para Cerrar Sesión
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    // No necesitamos navegar manualmente, App.tsx detectará el cambio y te mandará al Login.
+  };
+
   return (
     <div className="p-6">
-      {/* 1. Encabezado del Perfil */}
+      {/* Encabezado del Perfil */}
       <div className="flex flex-col items-center mb-8">
         <div className="w-24 h-24 bg-gradient-to-tr from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-xl mb-4">
           MS
@@ -23,7 +29,7 @@ export default function ProfilePage() {
         </span>
       </div>
 
-      {/* 2. Tarjeta de Estadísticas */}
+      {/* Tarjeta de Estadísticas */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
           <Award className="text-yellow-500 mb-2" size={28} />
@@ -35,7 +41,6 @@ export default function ProfilePage() {
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
           <div className="relative w-10 h-10 flex items-center justify-center mb-1">
             <span className="text-sm font-bold text-blue-600">{progress}%</span>
-            {/* Círculo de progreso simple SVG */}
             <svg
               className="absolute top-0 left-0 w-full h-full -rotate-90"
               viewBox="0 0 36 36"
@@ -61,13 +66,12 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* 3. Menú de Opciones (Settings) */}
+      {/* Menú de Opciones */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <MenuItem icon={<User size={20} />} label="Editar Perfil" />
         <MenuItem icon={<ShieldCheck size={20} />} label="Seguridad" />
         <MenuItem icon={<Settings size={20} />} label="Configuración General" />
 
-        {/* Toggle Falso de Dark Mode */}
         <div className="flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
@@ -80,7 +84,11 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="p-4 flex items-center gap-3 text-red-500 hover:bg-red-50 cursor-pointer transition-colors">
+        {/* 👈 3. Botón Cerrar Sesión Conectado */}
+        <div
+          onClick={handleLogout}
+          className="p-4 flex items-center gap-3 text-red-500 hover:bg-red-50 cursor-pointer transition-colors"
+        >
           <div className="p-2 bg-red-50 rounded-lg">
             <LogOut size={20} />
           </div>
@@ -95,7 +103,6 @@ export default function ProfilePage() {
   );
 }
 
-// Componente auxiliar para las filas del menú
 function MenuItem({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <div className="flex items-center justify-between p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors group">
