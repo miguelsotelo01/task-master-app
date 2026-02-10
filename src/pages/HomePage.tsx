@@ -28,7 +28,9 @@ export default function HomePage() {
         {" "}
         {/* Mucho padding abajo para ver la última tarea */}
         <header className="mb-6 text-center">
-          <h1 className="text-3xl font-extrabold text-gray-900">Mis Tareas</h1>
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            Mis Tareas
+          </h1>
           <p className="text-gray-500">
             {tasks.filter((t) => !t.is_completed).length} pendientes
           </p>
@@ -63,13 +65,13 @@ export default function HomePage() {
       >
         <form
           onSubmit={handleAddTask}
-          className="bg-white p-2 rounded-2xl shadow-2xl border border-gray-100 flex items-center gap-2"
+          className="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 flex items-center gap-2"
         >
           <input
             autoFocus // Para que el teclado salga solo en el móvil
             type="text"
             placeholder="¿Qué tienes que hacer?"
-            className="flex-1 px-4 py-3 bg-transparent outline-none text-gray-700 text-lg placeholder:text-gray-400"
+            className="flex-1 px-4 py-3 bg-transparent outline-none text-gray-700 dark:text-gray-100 text-lg placeholder:text-gray-400"
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
           />

@@ -1,15 +1,24 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { supabase } from "./lib/supabase";
+import { useUIStore } from "./store/useUIStore";
 import AppLayout from "./components/layout/AppLayout";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 
 function App() {
+  const { isDarkMode } = useUIStore();
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [isDarkMode]);
   useEffect(() => {
     // 1. Verificar sesión al cargar
     supabase.auth.getSession().then(({ data: { session } }) => {

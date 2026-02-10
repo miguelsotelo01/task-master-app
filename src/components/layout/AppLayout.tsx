@@ -6,14 +6,14 @@ export default function AppLayout() {
   const { toggleInput, isWriting } = useUIStore(); // Traemos la acción y el estado
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-sans">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-sans transition-colors duration-300">
       {/* Área Principal */}
       <main className="flex-1 overflow-y-auto pb-24">
         <Outlet />
       </main>
 
       {/* Navbar Inferior */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg pb-safe z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg pb-safe z-50 transition-colors duration-300">
         <div className="flex justify-around items-center h-16">
           <NavItem to="/" icon={<Home size={24} />} label="Tareas" />
 

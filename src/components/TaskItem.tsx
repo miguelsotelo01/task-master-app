@@ -10,7 +10,7 @@ export default function TaskItem({ task }: TaskItemProps) {
   const { toggleTask, deleteTask } = useTaskStore();
 
   return (
-    <div className="group flex items-center gap-3 p-4 bg-white rounded-2xl shadow-sm border border-gray-100 transition-all active:scale-[0.98]">
+    <div className="group flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 transition-all active:scale-[0.98]">
       {/* 1. Checkbox */}
       <button
         // ✅ Aquí ya lo tenías bien
@@ -32,9 +32,10 @@ export default function TaskItem({ task }: TaskItemProps) {
       {/* 2. Texto */}
       <span
         className={clsx(
-          "flex-1 text-gray-700 font-medium transition-all duration-300",
-          // 🛠️ CAMBIO AQUÍ: task.is_completed
-          task.is_completed && "text-gray-400 line-through",
+          "flex-1 font-medium transition-all duration-300",
+          task.is_completed
+            ? "text-gray-400 dark:text-gray-600 line-through"
+            : "text-gray-700 dark:text-gray-200",
         )}
       >
         {task.title}
