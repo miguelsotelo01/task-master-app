@@ -68,7 +68,7 @@ export default function HomePage() {
           className="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 flex items-center gap-2"
         >
           <input
-            autoFocus // Para que el teclado salga solo en el móvil
+            // autoFocus // Para que el teclado salga solo en el móvil
             type="text"
             placeholder="¿Qué tienes que hacer?"
             className="flex-1 px-4 py-3 bg-transparent outline-none text-gray-700 dark:text-gray-100 text-lg placeholder:text-gray-400"

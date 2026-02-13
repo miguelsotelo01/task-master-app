@@ -180,11 +180,6 @@ export default function ProfilePage() {
           <span className="font-medium">Cerrar Sesión</span>
         </div>
       </div>
-
-      <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-8">
-        Task Master v1.0.0 (2026)
-      </p>
-
       <EditProfileModal
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
