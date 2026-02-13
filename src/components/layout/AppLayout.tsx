@@ -6,9 +6,9 @@ export default function AppLayout() {
   const { toggleInput, isWriting } = useUIStore(); // Traemos la acción y el estado
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-sans transition-colors duration-300">
+    <div className="flex flex-col h-[100dvh] bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-sans transition-colors duration-300 overflow-hidden">
       {/* Área Principal */}
-      <main className="flex-1 overflow-y-auto pb-24">
+      <main className="flex-1 overflow-y-auto pb-24 scrollbar-hide">
         <Outlet />
       </main>
 

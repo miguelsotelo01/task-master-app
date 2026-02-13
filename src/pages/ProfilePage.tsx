@@ -55,9 +55,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       {/* 1. Encabezado del Perfil */}
-      <div className="flex flex-col items-center mb-8">
+      <div className="flex flex-col items-center mb-6">
         <div className="w-24 h-24 rounded-full shadow-xl mb-4 overflow-hidden border-4 border-white dark:border-gray-700 bg-gray-100 relative">
           {profile?.avatar_url ? (
             <img
