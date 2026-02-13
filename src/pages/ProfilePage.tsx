@@ -8,11 +8,8 @@ import EditProfileModal from "../components/EditProfileModal";
 
 export default function ProfilePage() {
   const { isDarkMode, toggleDarkMode } = useUIStore();
-
-  // 👇 Traemos deleteCompletedTasks del store
   const { tasks, deleteCompletedTasks } = useTaskStore();
   const { profile, fetchProfile } = useProfileStore();
-
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   useEffect(() => {
@@ -28,37 +25,33 @@ export default function ProfilePage() {
     await supabase.auth.signOut();
   };
 
-  // 👇 1. Función para cambiar contraseña
   const handleResetPassword = async () => {
     const email = prompt(
       "Escribe tu correo para enviarte el link de cambio de contraseña:",
     );
     if (email) {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + "/login", // Redirige al login tras el click en el correo
+        redirectTo: window.location.origin + "/login",
       });
       if (error) alert("Error: " + error.message);
-      else alert("¡Correo enviado! Revisa tu bandeja de entrada (y spam).");
+      else alert("¡Correo enviado! Revisa tu bandeja de entrada.");
     }
   };
 
-  // 👇 2. Función para limpiar tareas viejas
   const handleCleanUp = async () => {
-    if (
-      confirm(
-        "¿Estás seguro de borrar todas las tareas completadas? Esta acción no se puede deshacer.",
-      )
-    ) {
+    if (confirm("¿Estás seguro de borrar todas las tareas completadas?")) {
       await deleteCompletedTasks();
-      // No necesitamos alert, la UI se actualiza sola
     }
   };
 
   return (
-    <div className="p-4">
-      {/* 1. Encabezado del Perfil */}
-      <div className="flex flex-col items-center mb-6">
-        <div className="w-24 h-24 rounded-full shadow-xl mb-4 overflow-hidden border-4 border-white dark:border-gray-700 bg-gray-100 relative">
+    // 🛠️ CAMBIO CLAVE: h-full, flex, gap-6 y justify-start (o center si prefieres)
+    // overflow-y-auto asegura que si el celu es MUY chico, se pueda scrollear,
+    // pero en pantallas normales no aparecerá barra.
+    <div className="h-full flex flex-col p-4 gap-6 overflow-y-auto pb-safe">
+      {/* 1. Encabezado del Perfil (Sin márgenes mb-*) */}
+      <div className="flex flex-col items-center flex-shrink-0">
+        <div className="w-24 h-24 rounded-full shadow-xl mb-3 overflow-hidden border-4 border-white dark:border-gray-700 bg-gray-100 relative">
           {profile?.avatar_url ? (
             <img
               src={profile.avatar_url}
@@ -72,7 +65,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white text-center">
           {profile?.full_name || "Usuario Nuevo"}
         </h2>
 
@@ -81,8 +74,8 @@ export default function ProfilePage() {
         </span>
       </div>
 
-      {/* 2. Estadísticas */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
+      {/* 2. Estadísticas (Sin márgenes mb-*) */}
+      <div className="grid grid-cols-2 gap-4 flex-shrink-0">
         <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center transition-colors">
           <Award className="text-yellow-500 mb-2" size={28} />
           <span className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -125,29 +118,22 @@ export default function ProfilePage() {
       </div>
 
       {/* 3. Menú de Opciones */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors">
-        {/* Editar Perfil */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors flex-shrink-0">
         <div onClick={() => setIsEditOpen(true)}>
           <MenuItem icon={<User size={20} />} label="Editar Perfil" />
         </div>
-
-        {/* 👇 Seguridad (Conectado) */}
         <div onClick={handleResetPassword}>
           <MenuItem
             icon={<ShieldCheck size={20} />}
             label="Seguridad (Cambiar Pass)"
           />
         </div>
-
-        {/* 👇 Configuración (Conectado) */}
         <div onClick={handleCleanUp}>
           <MenuItem
             icon={<Settings size={20} />}
             label="Limpiar Tareas Completadas"
           />
         </div>
-
-        {/* Modo Oscuro */}
         <div
           onClick={toggleDarkMode}
           className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
@@ -168,8 +154,6 @@ export default function ProfilePage() {
             ></div>
           </div>
         </div>
-
-        {/* Cerrar Sesión */}
         <div
           onClick={handleLogout}
           className="p-4 flex items-center gap-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 cursor-pointer transition-colors"
@@ -180,6 +164,7 @@ export default function ProfilePage() {
           <span className="font-medium">Cerrar Sesión</span>
         </div>
       </div>
+
       <EditProfileModal
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
